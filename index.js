@@ -19,7 +19,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://front-mars-one.vercel.app/", "http://localhost:3000"],
+        origin: ["https://front-mars-one.vercel.app", "http://localhost:3000"],
         // origin: "http://localhost:3000",
         methods: ["GET", "POST"],
     },
