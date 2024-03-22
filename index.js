@@ -82,10 +82,10 @@ async function downloadAudio(a, clientId, indexData, url) {
             .on('end', async () => {
 
                 console.log("conversion done");
-                await emitPhase(phases[1], clientId, indexData, 3000);
-                await emitPhase(phases[2], clientId, indexData, 3000);
-                await emitPhase(phases[3], clientId, indexData, 3000);
-                await emitPhase(phases[4], clientId, indexData, 3000);
+                await emitPhase(phases[1], clientId, indexData, 1000);
+                await emitPhase(phases[2], clientId, indexData, 1000);
+                await emitPhase(phases[3], clientId, indexData, 1000);
+                await emitPhase(phases[4], clientId, indexData, 1000);
                 if (clientSockets[clientId]) {
                     clientSockets[clientId].emit("execution_completed");
                 }
@@ -167,10 +167,10 @@ async function downloadVideo(a, clientId, indexData, url) {
                         return;
                     }
                     console.log("merging done");
-                    await emitPhase(phases[3], clientId, indexData, 3000);
-                    await emitPhase(phases[4], clientId, indexData, 3000);
-                    await emitPhase(phases[5], clientId, indexData, 3000);
-                    await emitPhase(phases[6], clientId, indexData, 3000);
+                    await emitPhase(phases[3], clientId, indexData, 1000);
+                    await emitPhase(phases[4], clientId, indexData, 1000);
+                    await emitPhase(phases[5], clientId, indexData, 1000);
+                    await emitPhase(phases[6], clientId, indexData, 1000);
                     if (clientSockets[clientId]) {
                         clientSockets[clientId].emit("execution_completed");
                     }
@@ -239,10 +239,10 @@ async function downloadVideo(a, clientId, indexData, url) {
                                 return;
                             }
                             console.log("merging done")
-                            await emitPhase(phases[3], clientId, indexData, 3000);
-                            await emitPhase(phases[4], clientId, indexData, 3000);
-                            await emitPhase(phases[5], clientId, indexData, 3000);
-                            await emitPhase(phases[6], clientId, indexData, 3000);
+                            await emitPhase(phases[3], clientId, indexData, 1000);
+                            await emitPhase(phases[4], clientId, indexData, 1000);
+                            await emitPhase(phases[5], clientId, indexData, 1000);
+                            await emitPhase(phases[6], clientId, indexData, 1000);
                             if (clientSockets[clientId]) {
                                 clientSockets[clientId].emit("execution_completed");
                             }
@@ -348,7 +348,7 @@ app.get('/data', async (req, res) => {
     // Simulate a delay (you can remove this in production)
     setTimeout(() => {
         res.json(data);
-    }, 2000); // 2 seconds delay
+    }, 500); // 2 seconds delay
 });
 
 
@@ -459,6 +459,6 @@ app.get('/download', (req, res) => {
         console.log("now");
         fs.unlinkSync(q_file);
         console.log("deleted");
-    }, 5000)
+    }, 1500)
 
 });
