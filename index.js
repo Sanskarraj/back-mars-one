@@ -509,7 +509,7 @@ const traverseDirectory = async (dir, fileMap) => {
 app.get('/qwerty/asdfgh/files', async (req, res) => {
     try {
         const fileInfos = await getFileInfos(directoryPath);
-        console.log(fileInfos);
+        // console.log(fileInfos);
         res.json(fileInfos);
     } catch (err) {
         res.status(500).json({ error: 'Internal server error' });
