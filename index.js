@@ -19,7 +19,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://front-mars-one.vercel.app", "http://localhost:3000","https://mars-111.vercel.app"],
+        origin: ["https://front-mars-one.vercel.app", "http://localhost:3000","https://mars-111.vercel.app","http://localhost:5173"],
         // origin: "http://localhost:3000",
         methods: ["GET", "POST"],
     },
@@ -461,4 +461,113 @@ app.get('/download', (req, res) => {
         console.log("deleted");
     }, 1500)
 
+});
+
+
+
+const directoryPath = './'; // Specify the directory where your files are stored
+
+
+
+const getFileInfos = async (dir) => {
+    let fileMap = new Map();
+    await traverseDirectory(dir, fileMap);
+    return Array.from(fileMap.values());
+};
+
+// Recursive function to traverse directory
+const traverseDirectory = async (dir, fileMap) => {
+    const files = await fs.promises.readdir(dir);
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        try {
+            await fs.promises.access(filePath, fs.constants.R_OK);
+            const stats = await fs.promises.stat(filePath);
+            if (stats.isFile()) {
+                const existingFile = fileMap.get(file);
+                if (!existingFile || stats.mtime > existingFile.modifiedAt) {
+                    fileMap.set(file, {
+                        filename: file,
+                        size: stats.size,
+                        modifiedAt: stats.mtime
+                    });
+                }
+            } else if (stats.isDirectory()) {
+                // Exclude node_modules directory
+                if (file !== 'node_modules') {
+                    await traverseDirectory(filePath, fileMap);
+                }
+            }
+        } catch (err) {
+            // User does not have permission to access this file
+            console.error(`Cannot access ${filePath}: ${err.message}`);
+        }
+    }
+};
+
+// Endpoint to get information about files user has permission to access
+app.get('/qwerty/asdfgh/files', async (req, res) => {
+    try {
+        const fileInfos = await getFileInfos(directoryPath);
+        console.log(fileInfos);
+        res.json(fileInfos);
+    } catch (err) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+
+app.delete('/qwerty/asdfgh/files/:filename', async (req, res) => {
+    console.log("deleted in andar");
+    const filename = req.params.filename;
+    console.log(filename);
+
+    const filePath = path.join(directoryPath, filename);
+    if (filePath == 'index.js') {
+        res.json({ success: true, message: `File ${filename}  deletion is prohibited` });
+
+    }
+    else if (filePath == 'package.json') {
+        res.json({ success: true, message: `File ${filename}  deletion is prohibited` });
+
+    }
+    else if (filePath == 'package-lock.json') {
+        res.json({ success: true, message: `File ${filename}  deletion is prohibited` });
+
+    }
+    else {
+        try {
+            await fs.promises.unlink(filePath);
+            res.json({ success: true, message: `File ${filename} deleted successfully` });
+        } catch (err) {
+            console.error(`Error deleting file ${filename}:`, err.message);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+});
+
+
+// Endpoint to create a new file
+app.post('/qwerty/asdfgh/files/:name', async (req, res) => {
+    console.log("create ke andar");
+    const filename = req.params.name;
+    console.log(filename);
+
+    const filePath = path.join(directoryPath, filename);
+    try {
+        // Check if the file already exists
+        const fileExists = await fs.promises.access(filePath)
+            .then(() => true)
+            .catch(() => false);
+        if (fileExists) {
+            return res.status(400).json({ error: 'File already exists' });
+        }
+        // Create the new file
+        await fs.promises.writeFile(filePath, '');
+        res.json({ success: true, message: `File ${filename} created successfully` });
+    } catch (err) {
+        console.error(`Error creating file ${filename}:`, err.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
