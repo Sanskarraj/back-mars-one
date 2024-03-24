@@ -19,7 +19,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://front-mars-one.vercel.app", "http://localhost:3000","https://mars-111.vercel.app","http://localhost:5173"],
+        origin: ["https://front-mars-one.vercel.app", "http://localhost:3000", "https://mars-111.vercel.app", "http://localhost:5173"],
         // origin: "http://localhost:3000",
         methods: ["GET", "POST"],
     },
@@ -342,9 +342,9 @@ app.get('/data', async (req, res) => {
     let urlL = url.toString();
 
     let data = await getVideoInfo(urlL);
-    a = data;
+    a = data[0].formatData;
     console.log(a);
-    b = data;
+    b = data[0].formatData;
     // Simulate a delay (you can remove this in production)
     setTimeout(() => {
         res.json(data);
@@ -361,7 +361,7 @@ async function getVideoInfo(url) {
     const format = videoInfo.formats;
     // console.log(format);
     console.log(format.length);
-
+    arrayData = {};
     jsonArray = [];
 
     let audIndex = audioIndex(format);
@@ -376,9 +376,13 @@ async function getVideoInfo(url) {
         jsonArray.push(jsonData);
     }
 
-    // console.log(jsonArray);
-
-    return jsonArray;
+    arrayData["formatData"] = jsonArray;
+    arrayData["imageUrl"] = videoInfo.videoDetails.thumbnails[videoInfo.videoDetails.thumbnails.length - 1].url;
+    arrayData["videoTitle"] = videoInfo.videoDetails.title;
+    // console.log(videoInfo.videoDetails.thumbnails[videoInfo.videoDetails.thumbnails.length - 1].url);
+    userArray = [];
+    userArray.push(arrayData);
+    return userArray;
 }
 
 //function for getting first audio format index
