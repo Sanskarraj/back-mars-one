@@ -10,8 +10,8 @@ const cors = require("cors");
 const ytdl = require('ytdl-core');
 const fs = require('fs');
 const path = require('path');
-// const ffmpeg = require('fluent-ffmpeg');
-
+const ffmpeg = require('fluent-ffmpeg');
+// undo the comment
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -496,10 +496,14 @@ function getFormat(Format) {
 
 app.get('/download', (req, res) => {
     // Replace 'path_to_your_large_file' with the actual path to your large file
-    let pat = `./${a}`
-    console.log(pat);
-    const file = `./${a}`;
-    let q_file = a;
+    const { Fname } = req.query;
+    // let pat = `./${a}`
+    // console.log(pat);
+    const file = `./${Fname}`;
+    console.log(file);
+    console.log(Fname);
+
+    let q_file = Fname;
     // a = b;  
     // console.log("b data dwonload", b);
 
