@@ -10,19 +10,24 @@ const cors = require("cors");
 const ytdl = require('ytdl-core');
 const fs = require('fs');
 const path = require('path');
+// const ffmpeg = require('fluent-ffmpeg');
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 const { exec } = require('child_process');
 const ss = require('socket.io-stream');
 
 
 app.use(cors());
 const server = http.createServer(app);
-const io = new Server(server, {
+const io = require("socket.io")(server, {
     cors: {
-        origin: ["https://front-mars-one.vercel.app", "http://localhost:3000", "https://mars-111.vercel.app", "http://localhost:5173"],
+        origin: "*",
         // origin: "http://localhost:3000",
         methods: ["GET", "POST"],
     },
+    transports: "websocket"
 });
 
 
@@ -57,8 +62,9 @@ function emitPhase(phase, clientId, indexData, delay) {
 
 async function downloadAudio(a, clientId, indexData, url) {
 
-    const phases = ["Audio Downloaded", "Audio Conversion", "Checking for viruses", "Making your file ready", "Your file is ready !!"];
+    const phases = ["Audio Downloaded", "Audio Conversion", "Checking for viruses", "Making your file ready", "Your file is ready !!", "Downloading File"];
     const Info = await ytdl.getInfo(url);
+    await emitPhase(phases[5], clientId, indexData, 100);
 
     const Format = Info.formats[indexData];
     const ext = Format.container;
@@ -125,10 +131,12 @@ async function downloadAudio(a, clientId, indexData, url) {
 
 async function downloadVideo(a, clientId, indexData, url) {
 
-    const phases = ["Audio Downloaded", "Audio Conversion", "Video Downloaded", "Merging process Done", "Checking for viruses", "Making your file ready", "Your file is ready !!"];
+    const phases = ["Audio Downloaded", "Audio Conversion", "Video Downloaded", "Checking for Extensions", "Checking for viruses", "Making your file ready", "Your file is ready !!", "Downloading File"];
 
     // Get video information from YouTube API
     const videoInfo = await ytdl.getInfo(url);
+    await emitPhase(phases[7], clientId, indexData, 100);
+
     let v = 0;
     const title = videoInfo.videoDetails.title;
 
@@ -273,15 +281,31 @@ async function downloadVideo(a, clientId, indexData, url) {
 
 }
 
+io.use((socket, next) => {
+    // Authentication logic
+    const clientToken = socket.handshake.query.clientId;
+    const indexData = socket.handshake.query.indexData;
+
+    if (clientToken.length === 36 && indexData) {
+
+        return next();
+    }
+    return next(new Error('Authentication error'));
+});
+
+
 io.on("connection", (socket) => {
     console.log(`user connected: ${socket.id}`);
-
+    // console.log(socket);
     // Listen for the 'start_execution' event from the client
     socket.on("start_execution", (damta) => {
         //damta from function bracket()
         // Extract clientId from the query parameters
         const clientId = socket.handshake.query.clientId;
         console.log("client id", clientId);
+        console.log("client id length ", clientId.length);
+        // console.log("b data io con", b);
+
         const url = damta.message;
         console.log("url", url);
 
@@ -289,16 +313,35 @@ io.on("connection", (socket) => {
         const indexData = socket.handshake.query.indexData;
 
         console.log(indexData)
+        let urlForm = '';
+        let encode = '';
+        let urlAV = '';
+        for (let i = url.length - 1; i >= 0; i--) {
+            if (url[i] == ' ') { urlAV = encode; break; }
+            if (url[i] == '_') {
+                urlForm = encode;
+                encode = '';
+            }
+            else { encode += url[i]; }
 
+        }
+
+        let Format = urlForm.split('').reverse().join('');
+
+
+        console.log("format", Format);
         // Store the client's socket connection
         clientSockets[clientId] = socket;
+        console.log("av", urlAV);
 
-        let av = b[indexData].AV;
-        console.log(av);
+
+
+        // let av = b[indexData].AV;
+        console.log(urlAV);
         // Call your long complex function with clientId
         // longComplexFunction(clientId, indexData, urr);
-        if (av) {
-            let extension = b[indexData].Format
+        if (urlAV === '1') {
+            let extension = Format
             console.log("if statement")
             a = `Download ${clientId}.${extension}`
             console.log(a);
@@ -342,13 +385,15 @@ app.get('/data', async (req, res) => {
     let urlL = url.toString();
 
     let data = await getVideoInfo(urlL);
-    a = data[0].formatData;
-    console.log(a);
-    b = data[0].formatData;
+    // a = data[0].formatData;
+    // console.log(a);
+    // b = data[0].formatData;
+    // console.log("b data", b);
+    // console.log("a data", a);
     // Simulate a delay (you can remove this in production)
     setTimeout(() => {
         res.json(data);
-    }, 500); // 2 seconds delay
+    }, 10); // 2 seconds delay
 });
 
 
@@ -455,7 +500,9 @@ app.get('/download', (req, res) => {
     console.log(pat);
     const file = `./${a}`;
     let q_file = a;
-    a = b;
+    // a = b;  
+    // console.log("b data dwonload", b);
+
     res.download(file); // This sends the file as an attachment
     //deleting file 
     console.log("deleting file");
