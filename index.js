@@ -10,11 +10,11 @@ const cors = require("cors");
 const ytdl = require('ytdl-core');
 const fs = require('fs');
 const path = require('path');
-// const ffmpeg = require('fluent-ffmpeg');
-// undo the comment
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegPath);
+// undo the comment
+// const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+// const ffmpeg = require('fluent-ffmpeg');
+// ffmpeg.setFfmpegPath(ffmpegPath);
 const { exec } = require('child_process');
 const ss = require('socket.io-stream');
 
