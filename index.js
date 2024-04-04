@@ -514,7 +514,7 @@ app.get('/download', (req, res) => {
         console.log("now");
         fs.unlinkSync(q_file);
         console.log("deleted");
-    }, 1500)
+    }, 15000)
 
 });
 
